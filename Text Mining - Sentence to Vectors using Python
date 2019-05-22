@@ -1,0 +1,101 @@
+### RESEARCH DESCRIPTION
+#---------------------------------------
+##### MCGILL UNIVERSITY HAS CONDUCTED AN ONLINE COURSE TO INDEPENDENT STUDENTS. USING THE FEEDBACK, GRADES AND DEMOGRAPHIC DATA
+##### WE DECIDED TO CONDUCT A RESEARCH TO FIND THE CHARACTERISTICS OF STUDENTS WHO PERFORM WELL IN ONLINE CLASSES.
+##### THIS SCRIPT IS USED TO CLASSIFY STUDENTS' FEEDBACKS ABOUT THE CLASS INTO 6 PREDEFINED CATEGORIES THAT WE PICKED. 
+#---------------------------------------
+#!pip install --upgrade pip
+!pip3 --quiet install "tensorflow>=1.7" # Install the latest Tensorflow version.
+!pip3 --quiet install tensorflow-hub  # Install TF-Hub.
+!pip3 --quiet install seaborn
+
+
+import os
+import logging
+import tensorflow as tf
+import tensorflow_hub as hub
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import re
+import seaborn as sns
+import csv
+import os.path
+
+
+module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/3"
+embed = hub.Module(module_url)
+
+#---------------------------------------
+## PART 1 - FEEDBACK EMBEDDING
+#---------------------------------------
+
+my_path = os.path.abspath(os.path.dirname("Failed_feedback_only.csv")) #currently running the code on a sample dataset
+path = os.path.join(my_path, "Data/Failed_feedback_only.csv")
+
+feedbacks=[]
+
+with open(path) as file:
+    reader = csv.reader(file)  
+
+    for row in reader:
+        for text in row:
+            feedbacks.append(text)
+         
+# Reduce logging output.
+tf.logging.set_verbosity(tf.logging.ERROR)
+
+with tf.Session() as session:
+    session.run([tf.global_variables_initializer(), tf.tables_initializer()])
+    feedback_embeddings = session.run(embed(feedbacks))
+    
+    
+#---------------------------------------   
+## PART 2: CATEGORY EMBEDDING   
+#---------------------------------------
+
+category_path = os.path.abspath(os.path.dirname("six_categories.csv")) 
+path = os.path.join(category_path,"Data/six_categories.csv")
+
+categories = []
+
+with open(path, encoding = "ISO-8859-1") as file:
+    reader = csv.reader(file)  
+
+    for row in reader:
+        for text in row:
+            if (text != ''):
+                categories.append(text)
+
+# Reduce logging output.
+tf.logging.set_verbosity(tf.logging.ERROR)
+
+with tf.Session() as session:
+    session.run([tf.global_variables_initializer(), tf.tables_initializer()])
+    category_embeddings = session.run(embed(categories))
+    
+    
+#---------------------------------------    
+## PART 3: COSINE DISTANCE CALCULATION
+#---------------------------------------
+
+from sklearn.metrics.pairwise import cosine_similarity
+myList = []
+
+for feedback in feedback_embeddings:
+    score = cosine_similarity([feedback], category_embeddings)
+    print (score[0])
+    myList.append(score[0])
+    
+    
+#---------------------------------------   
+## PART 4: EXPORT RESULTS TO CSV
+#---------------------------------------
+import csv
+
+with open('cosine_distance_failed_1.csv', 'w') as csvFile:
+    writer = csv.writer(csvFile)
+    writer.writerows(myList)
+
+csvFile.close()
+
