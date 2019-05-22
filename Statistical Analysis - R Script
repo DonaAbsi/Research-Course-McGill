@@ -1,0 +1,80 @@
+---
+title: "RESEARCH_SCRIPT"
+author: "Dona Maria Absi"
+date: '2019-05-16'
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=TRUE}
+Data = read.csv("~/Documents/GLIS 647/Data/FINAL_DATASET.csv")
+
+library(ggplot2)
+
+ggplot(Data, aes(x= C_LABEL,color=C_LABEL))+
+  xlab("Goal for taking the course")+
+  ylab("Count")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_histogram(fill="white", binwidth = 0.5, position="stack", prob=TRUE, stat = "count")+
+  ggtitle("Distribution of goals for taking the course over all feedbacks")
+
+
+
+# Declaring subsets
+subsetPASS = Data[Data$PASS == 1,]
+subsetFAIL = Data[Data$PASS == 0,]
+
+
+
+# CATEGORY, GRADE AND GENDER
+  ##STUDENTS WHO PASSED
+ggplot(subset(subsetPASS, C_NUMBER%in% c("1", "2", "3","4","5","6") & GENDER_LABEL %in% c("F","M")),
+       aes(x = GENDER_LABEL, y = GRADE,  colour = interaction(GENDER_LABEL, C_NUMBER))) + facet_wrap( ~C_NUMBER) +
+       geom_point(alpha = 0.3, position = "jitter") +
+       geom_boxplot(alpha = 0, colour = "black") +
+       ggtitle("Goals, grade and gender of students who passed the course")
+
+  ## STUDENTS WHO FAILED
+ggplot(subset(subsetFAIL, C_NUMBER%in% c("1", "2", "3","4","5","6") & GENDER_LABEL %in% c("F","M")),
+       aes(x = GENDER_LABEL, y = GRADE,  colour = interaction(GENDER_LABEL, C_NUMBER))) + facet_wrap( ~ C_NUMBER) +
+       geom_point(alpha = 0.3, position = "jitter") +
+       geom_boxplot(alpha = 0, colour = "black") +
+       ggtitle("Goals, grade and gender of students who failed the course")
+
+
+
+# LEARNING_TIME BY GENDER
+ggplot(subset(Data, C_NUMBER%in% c("1", "2", "3","4","5","6") & GENDER_LABEL %in% c("F","M")),
+       aes(x = GENDER_LABEL, y = TOTAL_TIME..HRS.,  colour = interaction(GENDER_LABEL, C_NUMBER))) + facet_wrap( ~ C_NUMBER) +
+       geom_point(alpha = 0.3, position = "jitter") +
+       geom_boxplot(alpha = 0, colour = "black") +
+      ggtitle("learning time by goal and gender")
+
+
+
+# GRADE AND STUDY TIME
+ggplot(Data, aes(TOTAL_TIME..HRS., GRADE, color=GRADE )) +
+  geom_point()+
+  scale_color_gradient(low="blue", high="red")+
+  ggtitle("Grade and Learning time(in hours)")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  xlab("Learning time (in hours)") + 
+  ylab("Grade")+ 
+  labs(color ="Grade")+
+  theme(axis.text.x=element_text(angle=90,vjust = 0))
+
+
+
+#REGRESSION
+model_grades <- lm(GRADE~C_NUMBER+
+                     GENDER+
+                     GRADE+
+                     AGE+
+                     LEVEL_EDUC_LABEL+
+                     TOTAL_TIME..HRS., data = Data)
+
+summary(model_grades)
+
+```
