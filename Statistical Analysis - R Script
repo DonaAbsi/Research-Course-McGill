@@ -13,61 +13,109 @@ Data = read.csv("~/Documents/GLIS 647/Data/FINAL_DATASET.csv")
 
 library(ggplot2)
 
+
+#=========================
+# GOALS FOR TAKING THE COURSE
+#=========================
 ggplot(Data, aes(x= C_LABEL,color=C_LABEL))+
-  xlab("Goal for taking the course")+
-  ylab("Count")+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  geom_histogram(fill="white", binwidth = 0.5, position="stack", prob=TRUE, stat = "count")+
-  ggtitle("Distribution of goals for taking the course over all feedbacks")
+      xlab("Goals")+
+      ylab("Count")+
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      geom_histogram(fill="white", binwidth = 0.5, position="stack", prob=TRUE, stat = "count")+
+      ggtitle("Distribution of goals for taking the course over all feedbacks")+
+      theme(plot.title = element_text(hjust = 0.5))
 
 
 
-# Declaring subsets
-subsetPASS = Data[Data$PASS == 1,]
-subsetFAIL = Data[Data$PASS == 0,]
+#======================================
+## ALL VARIABLES BY GOALS & GENDER & ...
+#======================================
+# GOALS - ALL DATASET
+ggplot(Data, aes(x=GENDER_LABEL, color=GENDER_LABEL, label=GENDER_LABEL))+
+      xlab("Goals")+
+      ylab("Count")+
+      geom_histogram(position="stack", prob=TRUE, stat = "count", fill="white")+
+      facet_wrap(~C_LABEL)+
+      theme(legend.position = "none")+
+      ggtitle("Goal for taking the course by gender")+
+      theme(plot.title = element_text(hjust = 0.5))
 
 
+#LEARNING TIME
+ggplot(subset(Data, C_LABEL%in% c("earn credential", "educational purposes", "personal dvt","professional dvt","social activity","other ") & GENDER_LABEL %in% c("F","M")), aes(x = GENDER_LABEL, y = TOTAL_TIME..HRS.,  colour = GENDER_LABEL)) + 
+      facet_wrap(~C_LABEL) +
+      ylab("Learning time (in hrs)")+
+      xlab("Gender")+
+      geom_point(alpha = 0.3, position = "jitter") +
+      geom_boxplot(alpha = 0, colour = "black") +
+      theme(legend.position = "none")+
+      ggtitle("Learning time (in hrs) by category, and gender")+
+      theme(plot.title = element_text(hjust = 0.5))
 
-# CATEGORY, GRADE AND GENDER
-  ##STUDENTS WHO PASSED
-ggplot(subset(subsetPASS, C_NUMBER%in% c("1", "2", "3","4","5","6") & GENDER_LABEL %in% c("F","M")),
-       aes(x = GENDER_LABEL, y = GRADE,  colour = interaction(GENDER_LABEL, C_NUMBER))) + facet_wrap( ~C_NUMBER) +
+
+#AGE
+ggplot(subset(Data, C_LABEL%in% c("earn credential", "educational purposes", "personal dvt","professional dvt","social activity","other ") & GENDER_LABEL %in% c("F","M")), aes(x = GENDER_LABEL, y = AGE,  colour = GENDER_LABEL)) + 
+      facet_wrap(~C_LABEL) +
+      ylab("Age")+
+      ylim (0,85)+
+      xlab("Gender")+
+      geom_point(alpha = 0.3, position = "jitter") +
+      geom_boxplot(alpha = 0, colour = "black") +
+      theme(legend.position = "none")+
+      ggtitle("Age by category and gender")+
+      theme(plot.title = element_text(hjust = 0.5))
+
+
+#EDUCATION LEVEL
+ggplot(subset(Data, C_LABEL%in% c("earn credential", "educational purposes", "personal dvt","professional dvt","social activity","other ") & GENDER_LABEL %in% c("F","M") & LEVEL_EDUC_LABEL %in% c("1","2","3","4","5","6","7","8","9")), aes(x = GENDER_LABEL, y = LEVEL_EDUC,  colour = GENDER_LABEL)) + 
+      facet_wrap(~C_LABEL) +
+      ylab("Education Level")+
+      xlab("Gender")+
+      geom_point(alpha = 0.3, position = "jitter") +
+      theme(legend.position = "none")+
+      ggtitle("Education level, category and gender")+
+      theme(plot.title = element_text(hjust = 0.5))
+
+
+#GRADE
+  ##PASS ONLY
+ggplot(subset(Data, C_LABEL %in% c("earn credential", "educational purposes", "personal dvt","professional dvt","social activity","other ") & GENDER_LABEL %in% c("F","M") & PASS %in% c(1)),
+       aes(x = GENDER_LABEL, y = GRADE,  colour = GENDER_LABEL)) + 
+       facet_wrap( ~C_LABEL) +
        geom_point(alpha = 0.3, position = "jitter") +
        geom_boxplot(alpha = 0, colour = "black") +
-       ggtitle("Goals, grade and gender of students who passed the course")
+       theme(legend.position = "none")+
+       ggtitle("Category, grade and gender of students who passed the course")+
+       theme(plot.title = element_text(hjust = 0.5))
 
-  ## STUDENTS WHO FAILED
-ggplot(subset(subsetFAIL, C_NUMBER%in% c("1", "2", "3","4","5","6") & GENDER_LABEL %in% c("F","M")),
-       aes(x = GENDER_LABEL, y = GRADE,  colour = interaction(GENDER_LABEL, C_NUMBER))) + facet_wrap( ~ C_NUMBER) +
+  ## FAIL ONLY
+ggplot(subset(Data, C_LABEL%in% c("earn credential", "educational purposes", "personal dvt","professional dvt","social activity","other ") & GENDER_LABEL %in% c("F","M") & PASS %in% c(0)),
+       aes(x = GENDER_LABEL, y = GRADE,  colour = GENDER_LABEL)) + 
+       facet_wrap( ~C_LABEL) +
        geom_point(alpha = 0.3, position = "jitter") +
        geom_boxplot(alpha = 0, colour = "black") +
-       ggtitle("Goals, grade and gender of students who failed the course")
-
-
-
-# LEARNING_TIME BY GENDER
-ggplot(subset(Data, C_NUMBER%in% c("1", "2", "3","4","5","6") & GENDER_LABEL %in% c("F","M")),
-       aes(x = GENDER_LABEL, y = TOTAL_TIME..HRS.,  colour = interaction(GENDER_LABEL, C_NUMBER))) + facet_wrap( ~ C_NUMBER) +
-       geom_point(alpha = 0.3, position = "jitter") +
-       geom_boxplot(alpha = 0, colour = "black") +
-      ggtitle("learning time by goal and gender")
+       theme(legend.position = "none")+
+       ggtitle("Category, grade and gender of students who failed the course")+
+       theme(plot.title = element_text(hjust = 0.5))
 
 
 
 # GRADE AND STUDY TIME
-ggplot(Data, aes(TOTAL_TIME..HRS., GRADE, color=GRADE )) +
-  geom_point()+
-  scale_color_gradient(low="blue", high="red")+
-  ggtitle("Grade and Learning time(in hours)")+
-  theme(plot.title = element_text(hjust = 0.5))+
-  xlab("Learning time (in hours)") + 
-  ylab("Grade")+ 
-  labs(color ="Grade")+
-  theme(axis.text.x=element_text(angle=90,vjust = 0))
+ggplot(subset(Data, GENDER_LABEL %in% c("F","M")), aes(GRADE,TOTAL_TIME..HRS., color=GRADE )) + 
+      facet_wrap(~GENDER_LABEL) +
+      ylab("Learning time (in hrs)")+
+      xlab("Grade")+
+      scale_color_gradient(low="red", high="blue")+
+      geom_point(alpha = 0.3, position = "jitter") +
+      theme(legend.position = "none")+
+      ggtitle("Learning time (in hrs), grade and gender")+
+      theme(plot.title = element_text(hjust = 0.5))
 
 
-
+#====================
 #REGRESSION
+#====================
+#ITERATION 1
 model_grades <- lm(GRADE~C_NUMBER+
                      GENDER+
                      GRADE+
@@ -77,4 +125,32 @@ model_grades <- lm(GRADE~C_NUMBER+
 
 summary(model_grades)
 
+#ITERATION 2
+model_grades_2 <- lm(GRADE~AGE+
+                     LEVEL_EDUC_LABEL+
+                     TOTAL_TIME..HRS., data = Data)
+
+summary(model_grades_2)
+
+
+#pass only
+model_grades_pass <- lm(GRADE~C_NUMBER+
+                     GENDER+
+                     GRADE+
+                     AGE+
+                     LEVEL_EDUC_LABEL+
+                     TOTAL_TIME..HRS., data = subset(Data, PASS %in% c(1)))
+
+summary(model_grades_pass)
+
+
+#fail only
+model_grades_fail <- lm(GRADE~C_NUMBER+
+                     GENDER+
+                     GRADE+
+                     AGE+
+                     LEVEL_EDUC_LABEL+
+                     TOTAL_TIME..HRS., data = subset(Data, PASS %in% c(0)))
+
+summary(model_grades_fail)
 ```
